@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Auto Convertor for Stoplight
 // @namespace    https://wecando.cc/
-// @version      0.2
+// @version      0.4
 // @description  try to take over the world!
 // @author       sadhu
 // @match        https://automizely.stoplight.io/docs/developers-mobile-aftershipapi-com-tracking/branches/*/reference/*/paths/*/*
@@ -272,7 +272,7 @@ var responseJson;
     }
 
     // 转换为驼峰风格 is_url => isUrl
-    function toCamelCaseLetter(propertyName, specialChars = ['_', '/']) {
+    function toCamelCaseLetter(propertyName, specialChars = ['_', '/','-']) {
         var propertyNameMinor = propertyName
         for (let i = 0; i < specialChars.length; i++) {
             let specialChar = specialChars[i];
