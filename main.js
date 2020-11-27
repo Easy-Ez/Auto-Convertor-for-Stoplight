@@ -264,10 +264,10 @@ var responseJson;
      */
     function formatterPropertyName(propertyName) {
         var propertyNameMinor = toCamelCaseLetter(propertyName)
-        if (propertyName == 'break' || propertyName == 'continue') {
-            return `${propertyName}Fix`
+        if (propertyNameMinor == 'break' || propertyNameMinor == 'continue') {
+            return `${propertyNameMinor}Fix`
         } else {
-            return propertyName;
+            return propertyNameMinor;
         }
     }
 
