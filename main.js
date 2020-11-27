@@ -4,7 +4,7 @@
 // @version      0.4
 // @description  try to take over the world!
 // @author       sadhu
-// @match        https://automizely.stoplight.io/docs/developers-mobile-aftershipapi-com-tracking/branches/*/reference/*/paths/*/*
+// @match        https://automizely.stoplight.io/docs/developers-mobile-aftershipapi-com-tracking/*
 // @require		 https://cdn.bootcss.com/jquery/3.2.1/jquery.js
 // @require      https://cdn.jsdelivr.net/npm/sweetalert2@10
 // @require      https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.4.0/highlight.min.js
