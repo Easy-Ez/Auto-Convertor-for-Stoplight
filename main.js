@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         Auto Convertor for Stoplight
 // @namespace    https://wecando.cc/
-// @version      1.0.0
+// @version      1.1.0
 // @description  try to take over the world!
 // @author       sadhu
 // @match        https://automizely.stoplight.io/docs/developers-mobile-aftershipapi-com-tracking/*
+// @match        https://automizely.stoplight.io/docs/developers-product-automizelyapi-com-shopping/*
 // @require		 https://cdn.bootcss.com/jquery/3.2.1/jquery.js
 // @require      https://cdn.jsdelivr.net/npm/sweetalert2@10
 // @require      https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.4.0/highlight.min.js
@@ -51,13 +52,25 @@ var responseJson;
                         if (json.hasOwnProperty("data")) {
                             let data = json.data;
                             if (data.hasOwnProperty("bundledBranchNode")) {
-                                responseJson = JSON.parse(data.bundledBranchNode.data);
-                                console.log("================================")
-                                console.log(responseJson)
-                                waitForKeyElements(".SectionTitle.pl-1.pb-3.text-lg.font-medium.text-gray-7", responseCallbackFunction);
+                                try {
+                                    responseJson = JSON.parse(data.bundledBranchNode.data);
+                                    console.log("================================")
+                                    console.log(responseJson)
+                                    if (responseJson.responses[0].contents[0].schema.properties.hasOwnProperty("data")) {
+                                        waitForKeyElements(".SectionTitle.pl-1.pb-3.text-lg.font-medium.text-gray-7", responseCallbackFunction);
+                                    }
+                                }
+                                catch (err) {
+                                    console.log(err)
+                                } finally {
+                                    resolve(response);
+                                }
+
                             }
+                        } else {
+                            resolve(response);
                         }
-                        resolve(response);
+
                     });
             });
         });
@@ -98,11 +111,15 @@ var responseJson;
     }
 
     function generateAndroidJavaBean() {
-        var data = responseJson.responses[0].contents[0].schema.properties.data.properties
-        console.log(data);
+        let data = responseJson.responses[0].contents[0].schema.properties.data
+        let properties
+        if (responseJson.responses[0].contents[0].schema.properties.data.hasOwnProperty("properties")) {
+            properties = data.properties
+        } else if (responseJson.responses[0].contents[0].schema.properties.data.hasOwnProperty("$ref")) {
+            properties = getPropertiesJson(data)
+        }
         let innerMode = true;
-
-        var output = createJavaClass(generateClassNameByPath(), data, "")
+        var output = createJavaClass(generateClassNameByPath(), properties, "")
         return output
     }
 
@@ -192,7 +209,7 @@ var responseJson;
                     classInfos.push(createInnerClassInfoByRef(propertyJson.items))
                     typeString = getClassName(propertyJson.items)
                 } else {
-                    typeString = convertType(propertyJson.items.type)
+                    typeString = convertTypeForList(propertyJson.items.type)
                 }
                 output = output + `private List<${typeString}> ${formatterPropertyName(propertyname)};\n`;
             } else {
@@ -222,6 +239,22 @@ var responseJson;
             }
         }
 
+    }
+
+    function getPropertiesJson(propertyJson) {
+        let refPath = propertyJson["$ref"]
+        if (!isEmpty(refPath)) {
+            var paths = refPath.split("/")
+            var otherClassJson = responseJson
+            for (let j = 1; j < paths.length; j++) {
+                otherClassJson = otherClassJson[paths[j].replaceAll('~1', '/')];
+            }
+            if (otherClassJson.hasOwnProperty("type") && otherClassJson.type == "array") {
+                return getPropertiesJson(otherClassJson.items)
+            } else {
+                return otherClassJson.properties
+            }
+        }
     }
 
 
@@ -267,7 +300,7 @@ var responseJson;
      */
     function formatterPropertyName(propertyName) {
         var propertyNameMinor = toCamelCaseLetter(propertyName)
-        if (propertyNameMinor == 'break' || propertyNameMinor == 'continue') {
+        if (propertyNameMinor == 'break' || propertyNameMinor == 'continue' || propertyNameMinor == 'switch') {
             return `${propertyNameMinor}Fix`
         } else {
             return propertyNameMinor;
@@ -275,7 +308,7 @@ var responseJson;
     }
 
     // 转换为驼峰风格 is_url => isUrl
-    function toCamelCaseLetter(propertyName, specialChars = ['_', '/', '-']) {
+    function toCamelCaseLetter(propertyName, specialChars = ['_', '/', '-', ':']) {
         var propertyNameMinor = propertyName
         for (let i = 0; i < specialChars.length; i++) {
             let specialChar = specialChars[i];
@@ -298,9 +331,30 @@ var responseJson;
 
     // 类型转换
     function convertType(type) {
+        let paramType
+        if (isArray(type)) {
+            paramType = type[0];
+        } else {
+            paramType = type;
+        }
+        var convertType = "";
+        if (paramType == "integer") {
+            convertType = "int";
+        } else if (paramType == "string") {
+            convertType = "String";
+        } else {
+            convertType = paramType;
+        }
+        return convertType;
+    }
+    function convertTypeForList(type) {
         var convertType = "";
         if (type == "integer") {
-            convertType = "int";
+            convertType = "Integer";
+        } else if (type == "float") {
+            convertType = "Float";
+        } else if (type == "double") {
+            convertType = "Double";
         } else if (type == "string") {
             convertType = "String";
         } else {
@@ -308,7 +362,6 @@ var responseJson;
         }
         return convertType;
     }
-
 
 
     /**
@@ -336,6 +389,13 @@ var responseJson;
         } else {
             return false;
         }
+    }
+    //返回baitrue为Array，false不是array
+    function isArray(obj) {
+        if (typeof obj == "object" && obj.constructor == Array) {
+            return true;
+        }
+        return false;
     }
 
 
