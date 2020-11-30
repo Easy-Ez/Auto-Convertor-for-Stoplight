@@ -214,7 +214,7 @@ var responseJson;
             var paths = refPath.split("/")
             var otherClassJson = responseJson
             for (let j = 1; j < paths.length; j++) {
-                otherClassJson = otherClassJson[paths[j].replaceAll('~1','/')];
+                otherClassJson = otherClassJson[paths[j].replaceAll('~1', '/')];
             }
             if (otherClassJson.hasOwnProperty("type") && otherClassJson.type == "array") {
                 return createInnerClassInfoByRef(otherClassJson.items)
@@ -224,9 +224,12 @@ var responseJson;
         }
 
     }
+
+
     /**
-   * 通过直接创建内部类信息
-   */
+     * 通过直接创建内部类信息
+     * 
+     */
     function createInnerClassInfoByDirect(propertyname, propertyJson) {
         return { className: `${generateClassNameByPropertyName(propertyname)}`, propertiesJson: propertyJson.properties }
 
@@ -247,7 +250,7 @@ var responseJson;
             var paths = refPath.split("/")
             var otherClassJson = responseJson
             for (let j = 1; j < paths.length; j++) {
-                otherClassJson = otherClassJson[paths[j]];
+                otherClassJson = otherClassJson[paths[j].replaceAll('~1', '/')];
             }
             if (otherClassJson.hasOwnProperty("type") && otherClassJson.type == "array") {
                 return `List<${convertTypeByRef(otherClassJson.items)}>`
@@ -273,7 +276,7 @@ var responseJson;
     }
 
     // 转换为驼峰风格 is_url => isUrl
-    function toCamelCaseLetter(propertyName, specialChars = ['_', '/','-']) {
+    function toCamelCaseLetter(propertyName, specialChars = ['_', '/', '-']) {
         var propertyNameMinor = propertyName
         for (let i = 0; i < specialChars.length; i++) {
             let specialChar = specialChars[i];
