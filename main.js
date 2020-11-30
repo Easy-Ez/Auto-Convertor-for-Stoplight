@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Auto Convertor for Stoplight
 // @namespace    https://wecando.cc/
-// @version      0.6
+// @version      0.7
 // @description  try to take over the world!
 // @author       sadhu
 // @match        https://automizely.stoplight.io/docs/developers-mobile-aftershipapi-com-tracking/*
