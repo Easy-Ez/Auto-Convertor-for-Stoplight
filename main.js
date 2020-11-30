@@ -208,7 +208,6 @@ var responseJson;
      * @param {jsonObject} propertyJson
      */
     function createInnerClassInfoByRef(propertyJson) {
-        debugger
         let refPath = propertyJson["$ref"]
         if (!isEmpty(refPath)) {
             var paths = refPath.split("/")
@@ -346,7 +345,6 @@ var responseJson;
      * @param {String} jsonCode
      */
     function formatJavaCode(jsonCode) {
-        debugger;
         let postData = new FormData();
         postData.append("java", jsonCode);
 
@@ -379,6 +377,13 @@ var responseJson;
 
 
     function showConvertResult(text) {
+        // 处理选中事件
+        function checkField(val) {
+            console.log(val)
+            GM_setValue('checkboxType', val)
+        }
+
+        let footer = `<input type="radio" name="checkboxType" value="Java" >Java<input type="radio" name="checkboxType" value="Kotlin" >Kotlin<input type="radio" name="checkboxType" value="swift" >swift`
         let htmlContent = String.raw`${text}`
         // $("body").append(String.raw`<div id="codeDiv"><pre><code>${hljs.highlightAuto(htmlContent).value}</code></pre></div>`)
         Swal.fire({
@@ -386,11 +391,23 @@ var responseJson;
             icon: 'success',
             showCancelButton: false,
             confirmButtonText: 'Copy',
+            footer: footer,
             customClass: {
                 popup: 'sweet_custom_popup',
                 content: 'sweet_custom_content'
             },
             willOpen: () => {
+                // 设置默认选中的radio
+                let codeType = GM_getValue('checkboxType')
+                if (isEmpty(codeType)) {
+                    codeType = 'Java'
+                }
+                $(`input[name=checkboxType][value=${codeType}]`).attr("checked", 'checked');
+                $("input:radio[name='checkboxType']").change(function () {
+                    console.log(this.value)
+                    GM_setValue('checkboxType', this.value)
+                });
+                // 高亮格式化代码
                 let highCode = hljs.highlightAuto(htmlContent).value;
                 $("#codelang").html(highCode);
             }
@@ -402,6 +419,8 @@ ${htmlContent}`
         })
 
     }
+
+
 
 
 })();
