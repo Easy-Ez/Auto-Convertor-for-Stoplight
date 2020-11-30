@@ -208,12 +208,13 @@ var responseJson;
      * @param {jsonObject} propertyJson
      */
     function createInnerClassInfoByRef(propertyJson) {
+        debugger
         let refPath = propertyJson["$ref"]
         if (!isEmpty(refPath)) {
             var paths = refPath.split("/")
             var otherClassJson = responseJson
             for (let j = 1; j < paths.length; j++) {
-                otherClassJson = otherClassJson[paths[j]];
+                otherClassJson = otherClassJson[paths[j].replaceAll('~1','/')];
             }
             if (otherClassJson.hasOwnProperty("type") && otherClassJson.type == "array") {
                 return createInnerClassInfoByRef(otherClassJson.items)
