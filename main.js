@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Auto Convertor for Stoplight
 // @namespace    https://wecando.cc/
-// @version      1.1.0
+// @version      1.2.0
 // @description  try to take over the world!
 // @author       sadhu
 // @match        https://automizely.stoplight.io/docs/developers-mobile-aftershipapi-com-tracking/*
@@ -56,8 +56,11 @@ var responseJson;
                                     responseJson = JSON.parse(data.bundledBranchNode.data);
                                     console.log("================================")
                                     console.log(responseJson)
-                                    if (responseJson.responses[0].contents[0].schema.properties.hasOwnProperty("data")) {
+                                    if (responseJson.responses[0].contents[0].schema.properties.hasOwnProperty("data")
+                                        || !responseJson.responses[0].contents[0].schema.properties.hasOwnProperty("meta")) {
                                         waitForKeyElements(".SectionTitle.pl-1.pb-3.text-lg.font-medium.text-gray-7", responseCallbackFunction);
+                                    } else {
+                                        $("#myBtn").remove();
                                     }
                                 }
                                 catch (err) {
@@ -111,12 +114,16 @@ var responseJson;
     }
 
     function generateAndroidJavaBean() {
-        let data = responseJson.responses[0].contents[0].schema.properties.data
         let properties
-        if (responseJson.responses[0].contents[0].schema.properties.data.hasOwnProperty("properties")) {
-            properties = data.properties
-        } else if (responseJson.responses[0].contents[0].schema.properties.data.hasOwnProperty("$ref")) {
-            properties = getPropertiesJson(data)
+        if (responseJson.responses[0].contents[0].schema.properties.hasOwnProperty("data")) {
+            let data = responseJson.responses[0].contents[0].schema.properties.data
+            if (responseJson.responses[0].contents[0].schema.properties.data.hasOwnProperty("properties")) {
+                properties = data.properties
+            } else if (responseJson.responses[0].contents[0].schema.properties.data.hasOwnProperty("$ref")) {
+                properties = getPropertiesJson(data)
+            }
+        } else if (!responseJson.responses[0].contents[0].schema.properties.hasOwnProperty("meta")) {
+            properties = responseJson.responses[0].contents[0].schema.properties
         }
         let innerMode = true;
         var output = createJavaClass(generateClassNameByPath(), properties, "")
